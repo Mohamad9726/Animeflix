@@ -1,0 +1,31 @@
+{
+  "name": "animeflix",
+  "version": "1.0.0",
+  "description": "Real-time anime streaming platform with live comments, trends, and notifications",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "cd packages/server && npm run dev",
+    "dev:client": "cd packages/client && npm run dev",
+    "build": "npm run build:server && npm run build:client",
+    "build:server": "cd packages/server && npm run build",
+    "build:client": "cd packages/client && npm run build",
+    "start": "node packages/server/dist/index.js",
+    "test": "npm run test:server && npm run test:client",
+    "test:server": "cd packages/server && npm run test",
+    "test:client": "cd packages/client && npm run test"
+  },
+  "keywords": [
+    "anime",
+    "streaming",
+    "real-time",
+    "socket.io",
+    "notifications"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.1"
+  }
+}
