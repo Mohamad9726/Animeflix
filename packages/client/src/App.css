@@ -1,0 +1,264 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1a1f35 100%);
+  color: #e2e8f0;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.4) 0%, rgba(30, 41, 59, 0.3) 100%);
+  border-bottom: 1px solid #2d3748;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.user-info {
+  font-size: 13px;
+  color: #cbd5e1;
+  background: rgba(96, 165, 250, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: linear-gradient(90deg, rgba(20, 30, 50, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+  border-bottom: 1px solid #2d3748;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.control-group select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #2d3748;
+  border-radius: 4px;
+  padding: 6px 10px;
+  color: #e2e8f0;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.control-group select:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  border: 1px solid #2d3748;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #3f3f46;
+}
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  gap: 16px;
+  padding: 16px 24px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.left-panel,
+.right-panel {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.center-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.video-area {
+  flex-shrink: 0;
+}
+
+.video-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px dashed #2d3748;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  font-size: 18px;
+  color: #cbd5e1;
+  min-height: 300px;
+}
+
+.video-placeholder span {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.welcome-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px;
+  text-align: center;
+  flex: 1;
+}
+
+.welcome-message h2 {
+  margin: 0;
+  font-size: 28px;
+  background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-message p {
+  margin: 0;
+  color: #cbd5e1;
+  font-size: 14px;
+  max-width: 400px;
+}
+
+@media (max-width: 1400px) {
+  .content-layout {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .left-panel,
+  .right-panel {
+    display: none;
+  }
+
+  .button-group {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .control-group {
+    width: 100%;
+  }
+
+  .control-group select {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-center {
+    flex: 100%;
+    order: 3;
+  }
+
+  .controls {
+    padding: 12px 16px;
+  }
+
+  .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
