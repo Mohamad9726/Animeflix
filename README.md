@@ -111,8 +111,17 @@ npm run dev
 
 ### Documentation
 
-Comprehensive documentation is available in the `/docs` directory:
+Comprehensive documentation is available in the root directory and `/docs` directory:
 
+**Backend API Documentation:**
+- **[BACKEND_IMPLEMENTATION.md](./BACKEND_IMPLEMENTATION.md)** - Complete implementation details
+- **[API_ROUTES.md](./API_ROUTES.md)** - Complete REST API documentation with all endpoints
+- **[API_EXAMPLES.md](./API_EXAMPLES.md)** - Practical examples using cURL and JavaScript
+
+**Interactive Documentation:**
+- API documentation available at: `http://localhost:3000/api-docs` (when server is running)
+
+**General Documentation:**
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - System design and component overview (EN/FR)
 - **[SETUP.md](./docs/SETUP.md)** - Installation and configuration guide (EN/FR)
 - **[FEATURES.md](./docs/FEATURES.md)** - Complete features and user guide (EN/FR)
