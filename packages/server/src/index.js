@@ -4,6 +4,12 @@ import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
+import swaggerUi from 'swagger-ui-express';
+import apiRoutes from './routes.js';
+import { swaggerSpec } from './swagger.js';
+import { errorHandler, authenticateToken } from './middleware.js';
+import { JobScheduler } from './jobs.js';
+import { storage, initializeSampleData } from './models.js';
 
 dotenv.config();
 
@@ -19,65 +25,47 @@ const io = new SocketIOServer(httpServer, {
 
 const PORT = process.env.PORT || 3000;
 
-// In-memory storage for demo purposes
-const comments = new Map(); // animeId:episodeId -> Array of comments
-const trends = new Map(); // animeId -> trend data
-const activeUsers = new Map(); // animeId:episodeId -> Set of user IDs
-const notifications = new Map(); // userId -> Array of notifications
-
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Initialize sample data
+initializeSampleData();
+
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// API v1 routes
+app.use('/api/v1', apiRoutes);
+
+// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.get('/api/trends', (req, res) => {
-  const trendsArray = Array.from(trends.values()).sort((a, b) => b.count - a.count).slice(0, 10);
-  res.json(trendsArray);
-});
+// Error handler
+app.use(errorHandler);
 
-app.get('/api/notifications/:userId', (req, res) => {
-  const userNotifications = notifications.get(req.params.userId) || [];
-  res.json(userNotifications);
-});
+// ============= Socket.io Event Handlers =============
 
-app.post('/api/notifications/:userId/read/:notificationId', (req, res) => {
-  const userNotifications = notifications.get(req.params.userId) || [];
-  const idx = userNotifications.findIndex(n => n.id === req.params.notificationId);
-  if (idx !== -1) {
-    userNotifications[idx].read = true;
-  }
-  res.json({ success: true });
-});
-
-app.get('/api/comments/:animeId/:episodeId', (req, res) => {
-  const key = `${req.params.animeId}:${req.params.episodeId}`;
-  const roomComments = comments.get(key) || [];
-  res.json(roomComments);
-});
-
-// Socket.io event handlers
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
   socket.on('join-room', ({ animeId, episodeId, userId, userName }) => {
     const room = `anime:${animeId}:episode:${episodeId}`;
     socket.join(room);
-    
+
     const key = `${animeId}:${episodeId}`;
-    if (!activeUsers.has(key)) {
-      activeUsers.set(key, new Set());
+    if (!storage.activeUsers.has(key)) {
+      storage.activeUsers.set(key, new Set());
     }
-    activeUsers.get(key).add(userId);
+    storage.activeUsers.get(key).add(userId);
 
     // Broadcast user joined
     io.to(room).emit('user-joined', {
       userId,
       userName,
-      activeUsers: activeUsers.get(key).size
+      activeUsers: storage.activeUsers.get(key).size
     });
 
     console.log(`User ${userId} joined room ${room}`);
@@ -86,7 +74,7 @@ io.on('connection', (socket) => {
   socket.on('send-comment', ({ animeId, episodeId, userId, userName, text, timestamp }) => {
     const room = `anime:${animeId}:episode:${episodeId}`;
     const key = `${animeId}:${episodeId}`;
-    
+
     const comment = {
       id: uuidv4(),
       userId,
@@ -96,24 +84,24 @@ io.on('connection', (socket) => {
       likes: 0
     };
 
-    if (!comments.has(key)) {
-      comments.set(key, []);
+    if (!storage.comments.has(key)) {
+      storage.comments.set(key, []);
     }
-    comments.get(key).push(comment);
+    storage.comments.get(key).push(comment);
 
     // Broadcast comment to room
     io.to(room).emit('new-comment', comment);
 
     // Update trend
-    if (!trends.has(animeId)) {
-      trends.set(animeId, {
+    if (!storage.trends.has(animeId)) {
+      storage.trends.set(animeId, {
         id: animeId,
         name: `Anime ${animeId}`,
         count: 0,
         mentions: 0
       });
     }
-    const trend = trends.get(animeId);
+    const trend = storage.trends.get(animeId);
     trend.count++;
     trend.mentions++;
 
@@ -124,9 +112,9 @@ io.on('connection', (socket) => {
   socket.on('like-comment', ({ animeId, episodeId, commentId }) => {
     const room = `anime:${animeId}:episode:${episodeId}`;
     const key = `${animeId}:${episodeId}`;
-    const roomComments = comments.get(key) || [];
+    const roomComments = storage.comments.get(key) || [];
     const comment = roomComments.find(c => c.id === commentId);
-    
+
     if (comment) {
       comment.likes++;
       io.to(room).emit('comment-liked', { commentId, likes: comment.likes });
@@ -134,10 +122,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send-notification', ({ userId, title, message, animeId, episodeId }) => {
-    if (!notifications.has(userId)) {
-      notifications.set(userId, []);
+    if (!storage.notifications.has(userId)) {
+      storage.notifications.set(userId, []);
     }
-    
+
     const notification = {
       id: uuidv4(),
       title,
@@ -149,7 +137,7 @@ io.on('connection', (socket) => {
       type: 'episode-release'
     };
 
-    notifications.get(userId).push(notification);
+    storage.notifications.get(userId).push(notification);
     io.emit('notification', { userId, notification });
   });
 
@@ -166,17 +154,17 @@ io.on('connection', (socket) => {
   socket.on('leave-room', ({ animeId, episodeId, userId, userName }) => {
     const room = `anime:${animeId}:episode:${episodeId}`;
     const key = `${animeId}:${episodeId}`;
-    
+
     socket.leave(room);
-    
-    if (activeUsers.has(key)) {
-      activeUsers.get(key).delete(userId);
+
+    if (storage.activeUsers.has(key)) {
+      storage.activeUsers.get(key).delete(userId);
     }
 
     io.to(room).emit('user-left', {
       userId,
       userName,
-      activeUsers: activeUsers.get(key)?.size || 0
+      activeUsers: storage.activeUsers.get(key)?.size || 0
     });
 
     console.log(`User ${userId} left room ${room}`);
@@ -187,7 +175,21 @@ io.on('connection', (socket) => {
   });
 });
 
+// Start background job scheduler
+const jobScheduler = new JobScheduler(io);
+jobScheduler.start();
+
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Socket.io server ready for connections`);
+  console.log(`API documentation available at http://localhost:${PORT}/api-docs`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  jobScheduler.stop();
+  httpServer.close(() => {
+    console.log('HTTP server closed');
+  });
 });
